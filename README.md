@@ -43,28 +43,63 @@ python movinc.py /path/to/origin.mov /path/to/target.mov
 
 
 ## Example
-以下の二つの動画に対してスコアを求める。
+`./movies` にサンプル動画（ＮＨＫクリエイティブ･ライブラリーのものを使用、詳細は[こちら](./movies/README.md)）があるので、それに対するスコアを出してみる。
 
-- https://www.youtube.com/watch?v=aSUcCc7hgmI
-- https://www.youtube.com/watch?v=5g2-7ZzDhjg
+各動画は、次のようなものになっている。
 
-```
-$ python ./movinc.py ./aSUcCc7hgmI.mp4 ./5g2-7ZzDhjg.mp4 
-0.39583333333333337
-```
-
-ちなみに、同一の動画に仕様した場合は
+- mov1.mp4: アオショウビンの動画
+- mov2.mp4: インドクジャクの動画
+- mov3.mp4: mov2.mp4 を分割したものを mov1.mp4 の前後に合成した動画
 
 ```
-$ python ./movinc.py ./aSUcCc7hgmI.mp4 ./aSUcCc7hgmI.mp4
+$ python movinc.py movies/mov1.mp4 movies/mov1.mp4
+1.0
+$ python movinc.py movies/mov1.mp4 movies/mov2.mp4
+0.6315104166666667
+$ python movinc.py movies/mov1.mp4 movies/mov3.mp4
+0.9986979166666666
+$ python movinc.py movies/mov2.mp4 movies/mov1.mp4
+0.58203125
+$ python movinc.py movies/mov2.mp4 movies/mov2.mp4
+1.0
+$ python movinc.py movies/mov2.mp4 movies/mov3.mp4
+0.9908854166666666
+$ python ./movinc.py movies/mov3.mp4 movies/mov1.mp4
+0.42838541666666663
+$ python ./movinc.py movies/mov3.mp4 movies/mov2.mp4
+0.8489583333333334
+$ python ./movinc.py movies/mov3.mp4 movies/mov3.mp4
 1.0
 ```
 
-となる。
+当然だが、同じ動画に対しては 1.0 が出力される。mov1,、mov2 をオリジナル動画に、mov3 をターゲット動画にすると高いスコアが出力される。mov3 をオリジナル動画にすると、mov1 に対しては低いスコアが出力される。ただし、mov2 に対しては 0.84 と比較的高いスコアが出力される。これはあまり望ましくないので、ランダムN点を 100 に変更して実行する。
+
+```
+$ python ./movinc.py movies/mov1.mp4 movies/mov1.mp4 -p 100
+1.0
+$ python ./movinc.py movies/mov1.mp4 movies/mov2.mp4 -p 100
+0.1271446078431373
+$ python ./movinc.py movies/mov1.mp4 movies/mov3.mp4 -p 100
+0.9973958333333334
+$ python ./movinc.py movies/mov2.mp4 movies/mov1.mp4 -p 100
+0.13541666666666663
+$ python ./movinc.py movies/mov2.mp4 movies/mov2.mp4 -p 100
+1.0
+$ python ./movinc.py movies/mov2.mp4 movies/mov3.mp4 -p 100
+0.9905024509803921
+$ python ./movinc.py movies/mov3.mp4 movies/mov1.mp4 -p 100
+0.12974877450980393
+$ python ./movinc.py movies/mov3.mp4 movies/mov2.mp4 -p 100
+0.7622549019607843
+$ python ./movinc.py movies/mov3.mp4 movies/mov3.mp4 -p 100
+1.0
+```
+
+精度が上がっていることがわかる。
 
 
 ## Tips
 - OpenCV による動画の読み込みに最も時間がかかるので、
     - 同一動画を使う場合は、あらかじめ Perceptual Hash を求めたものを保存しておいた方が良い
     - N点の数はパフォーマンスに大きな影響はない
-
+- mov3 が mov2 との類似度が高いのは、実装上ランダムN点が前方に偏りがちなことが原因な可能性がある。ランダム点をより分散するように実装すると良いかも
